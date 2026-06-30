@@ -452,7 +452,7 @@
                 <input type="number" id="row-length-input" value="12" min="1" max="2048">
             </div>
             <div class="info-box-container">
-                <div class="info-box-label">Notes Remaining</div>
+                <div class="info-box-label">Notes Remaining Now</div>
                 <div id="countdown-display" class="info-box-value">12</div>
             </div>
         </div>
@@ -465,18 +465,17 @@
             <button id="play-pause-btn" class="blue-btn" style="margin-left: 5px;">Play</button>
             <button id="reset-btn" class="red-btn">Erase Tone Row</button>
             <button id="exportMidiBtn" class="blue-btn" style="margin-left: 5px;">Export MIDI to Reaper</button>
-        <button id="save-preset-btn" style="margin-left: 5px; background-color: #00CC44; color: black; font-weight: bold; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">Save Preset</button>
-<button id="load-preset-btn" style="margin-left: 5px; background-color: #00CC44; color: black; font-weight: bold; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">Load Preset</button>
+        <div style="text-align: center;"><button id="save-preset-btn" style="margin-left: 5px; background-color: #00CC44; color: black; font-weight: bold; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">Save Preset</button>
+<button id="load-preset-btn" style="margin-left: 5px; background-color: #00CC44; color: black; font-weight: bold; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">Load Preset</button></div>
         </div>
 
-        <h2>Serial Transformations</h2>
+        <h2 style="text-align: center;">Serial Transformations</h2>
         <div class="transformation-grid">
             <button id="retro-btn" class="transform-btn">Retrograde</button>
             <button id="inversion-btn" class="transform-btn">Inversion</button>
             <button id="retro-inversion-btn" class="transform-btn">Retro-Inversion</button>
         </div>
 <div id="matrix-container" style="display: none; margin-top: 20px; text-align: center;">
-    <h2 style="color: black;">Magic Matrix</h2>
     <div id="matrix-grid" style="display: inline-grid; gap: 4px; background-color: #333; padding: 10px; border-radius: 8px;">
         <!-- The 12x12 grid squares will be generated here by JavaScript -->
     </div>
