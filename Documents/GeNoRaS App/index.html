@@ -1,0 +1,882 @@
+†<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="apple-touch-icon" href="icon.png">
+
+<script src="https://unpkg.com/midi-writer-js/browser/midiwriter.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serial Music Assistant</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #111111;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding: 20px 15px;
+            max-width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .yellow-module {
+            background-color: #fff48f;
+            border-radius: 6px;
+            padding: 25px 25px 5px 25px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        input[type="text"], select, input[type="number"] {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            padding: 8px 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        select option {
+            font-family: monospace;
+            white-space: pre;
+        }
+        .dial-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 20px 0 15px 0;
+    gap: 20px;
+}
+        .dial-container {
+            text-align: center;
+            flex: 0 0 80px;
+        }
+        .dial-label {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            display: block;
+        }
+        .dial-value {
+            display: block;
+            font-weight: bold;
+            font-size: 13px;
+            color: #222222;
+            margin-top: 2px;
+        }
+        .rotary-dial {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #444444 0%, #222222 100%);
+            border-radius: 50%;
+            margin: 0 auto 10px auto;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.2);
+            border: 2px solid #111111;
+        }
+        .dial-pointer {
+            position: absolute;
+            width: 3px;
+            height: 22px;
+            background-color: #ffffff;
+            top: 5px;
+            left: 28.5px;
+            transform-origin: bottom center;
+            transform: rotate(0deg);
+            border-radius: 2px;
+        }
+        .slider-fallback {
+            width: 100%;
+            margin: 0 auto;
+            display: block;
+        }
+        .checkbox-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        .checkbox-group label {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .info-grid {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        .info-box-container {
+            flex: 1;
+        }
+        .info-box-label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .info-box-value {
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            min-height: 18px;
+        }
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .blue-btn {
+            background-color: #0056ff;
+            color: #ffffff;
+            border: none;
+            padding: 12px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+        .blue-btn:hover {
+            background-color: #0044cc;
+        }
+        .red-btn {
+            background-color: #ff2a2a;
+            color: #ffffff;
+            border: none;
+            padding: 12px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+        .red-btn:hover {
+            background-color: #d61c1c;
+        }
+        .beat-indicator-container {
+            font-size: 14px;
+            font-weight: bold;
+            color: #111111;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .beat-box {
+            width: 28px;
+            height: 28px;
+            background-color: #333333;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 4px;
+            transition: background-color 0.05s ease;
+        }
+        .beat-flash-green {
+            background-color: #00ff00 !important;
+            color: #000000 !important;
+            box-shadow: 0 0 8px #00ff00;
+        }
+        .transformation-grid {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .transform-btn {
+            flex: 1;
+            background-color: #0056ff;
+            color: #ffffff;
+            border: none;
+            padding: 12px 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .transform-btn:hover {
+            background-color: #0044cc;
+        }
+        .output-box {
+            background-color: #f5f5f5;
+            border: 1px solid #dddddd;
+            border-radius: 6px;
+            padding: 20px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 15px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .output-text {
+            font-weight: bold;
+            color: #222222;
+            word-wrap: break-word;
+            text-align: center;
+        }
+        /* --- Mobile Responsive Fixes --- */
+@media (max-width: 600px)  {
+    /* Stop the webpage from sliding or drifting left and right */
+    html, body {
+        overflow-x: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Force the main container to stay inside the phone view */
+    div, center, table {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Shrink and stack the buttons/controls neatly inside the yellow box */
+    input[type="button"], button, .button-row, td, select {
+        display: block !important;
+        width: 90% !important;
+        max-width: 280px !important;
+        margin: 6px auto !important;
+        float: none !important;
+    }
+
+    /* Scale down the sliders and knobs so they fit and don't overflow */
+    input[type="range"], .knob, webaudio-knob, webaudio-slider {
+        max-width: 80% !important;
+        transform: scale(0.85) !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Shrink the 12x12 matrix slightly to keep it on screen */
+    #matrix-grid, table table {
+        transform: scale(0.75) !important;
+        transform-origin: top center !important;
+        margin: 0 auto !important;
+    }
+}
+    body {
+        padding: 10px;
+    }
+    .control-panel, .button-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+    }
+    button {
+        width: 90% !important;
+        margin: 5px 0 !important;
+    }
+    #matrix-grid {
+        transform: scale(0.75);
+        transform-origin: top left;
+    }
+}
+    
+    @media (max-width: 600px) and (orientation: portrait) {
+    /* Prevent the narrow page from shifting left/right */
+    html, body {
+        overflow-x: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Wrap the top row of buttons neatly so they don't run off screen */
+    .button-row, center > input[type="button"], center > button {
+        display: inline-block !important;
+        width: auto !important;
+        margin: 4px !important;
+        padding: 6px 10px !important;
+        font-size: 14px !important;
+    }
+
+    /* Keep the text boxes and labels lined up and centered */
+    td, tr, select {
+        text-align: center !important;
+    }
+
+    /* Scale the 12x12 matrix down slightly more to fit the narrow screen */
+    #matrix-grid, table table {
+        transform: scale(0.68) !important;
+        transform-origin: top center !important;
+        margin: 0 auto !important;
+    }
+
+    /* Scale down the knobs and sliders slightly to fit the yellow box */
+    webaudio-knob, webaudio-slider, .knob, input[type="range"] {
+        transform: scale(0.8) !important;
+        margin: 0 auto !important;
+    }
+}
+    </style>
+
+<link rel="apple-touch-icon" style="background: #FFEB3B;" href="ICONforGeNoRaS.001.png">
+</head>
+<body>
+
+
+<div class="yellow-module">
+  <h1 style="text-align: center; margin-top: 10px; margin-bottom: 5px;">GeNoRaS</h1>
+  <p style="text-align: center; font-size: 16px; margin-top: 0; margin-bottom: 25px; color: #555555;">Serial Music Assistant</p>
+        <div class="form-group">
+            <label>Core Tone Row (Comma-separated integers, e.g., 0,3,11,4,2,9,7,5,6,1,8,10)</label>
+            <input type="text" id="tone-row-input" placeholder="Enter numbers or click Generate...">
+        </div>
+
+        <div class="form-group">
+            <label>Rhythm Mode</label>
+            <select id="rhythm-select">
+                <option value="steady">Fixed Steady Pulse</option>
+                <option value="dotted">Dotted Rhythm Mode</option>
+                <option value="random-fluid">Random Fluid Durations</option>
+                <option value="durations">Serial Durations (Proportional)</option>
+                <option value="interleaved">Interleaved Silences</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Time Signature</label>
+            <select id="time-sig-select">
+                <option value="4-4">4/4 (Standard Quadruple)</option>
+                <option value="3-4">3/4 (Standard Triple)</option>
+                <option value="2-4">2/4 (Standard Duple)</option>
+                <option value="6-8">6/8 (Compound Duple)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Key Signature</label>
+            <select id="key-select">
+                <option value="C-maj">C Major            |  A Minor</option>
+                <option value="G-maj">G Major (1 #)      |  E Minor</option>
+                <option value="D-maj">D Major (2 #)      |  B Minor</option>
+                <option value="A-maj">A Major (3 #)      |  F# Minor</option>
+                <option value="E-maj">E Major (4 #)      |  C# Minor</option>
+                <option value="B-maj">B Major (5 #)      |  G# Minor</option>
+                <option value="Fsh-maj">F# Major (6 #)     |  D# Minor</option>
+                <option value="Csh-maj">C# Major (7 #)     |  A# Minor</option>
+                <option value="F-maj">F Major (1 b)      |  D Minor</option>
+                <option value="Bb-maj">Bb Major (2 b)     |  G Minor</option>
+                <option value="Eb-maj">Eb Major (3 b)     |  C Minor</option>
+                <option value="Ab-maj">Ab Major (4 b)     |  F Minor</option>
+                <option value="Db-maj">Db Major (5 b)     |  Bb Minor</option>
+                <option value="Gb-maj">Gb Major (6 b)     |  Eb Minor</option>
+                <option value="Cb-maj">Cb Major (7 b)     |  Ab Minor</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Instrument Voice</label>
+            <select id="voice-select">
+                <option value="piano">Acoustic Piano</option>
+                <option value="sine">Pure Sine Wave Synth</option>
+                <option value="triangle">Triangle Wave (Classic 8-Bit)</option>
+                <option value="sawtooth">Sawtooth Wave (Vintage String)</option>
+            </select>
+        </div>
+<div class="form-group">
+            <label>Export Note Duration (MIDI)</label>
+            <select id="export-duration-select">
+                <option value="8">Eighth Notes (Fast)</option>
+                <option value="4" selected>Quarter Notes (Standard)</option>
+                <option value="2">Half Notes (Slow)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Octave Range</label>
+            <select id="octave-select">
+                <option value="1">1 Octave (Standard Middle C)</option>
+                <option value="2">2 Octaves (Medium Expansion)</option>
+                <option value="3">3 Octaves (Full Keyboard Range)</option>
+            </select>
+        </div>
+
+        <div class="dial-row">
+            <div class="dial-container">
+                <div class="dial-label">Master Volume<span id="vol-label" class="dial-value">(70%)</span></div>
+                <div class="rotary-dial"><div class="dial-pointer" id="vol-pointer"></div></div>
+                <input type="range" class="slider-fallback" id="vol-slider" min="0" max="100" value="70">
+            </div>
+            <div class="dial-container">
+                <div class="dial-label">Note Velocity<span id="vel-label" class="dial-value">(100)</span></div>
+                <div class="rotary-dial"><div class="dial-pointer" id="vel-pointer"></div></div>
+                <input type="range" class="slider-fallback" id="vel-slider" min="0" max="127" value="100">
+            </div>
+            <div class="dial-container">
+                <div class="dial-label">Tempo Speed<span id="tempo-label" class="dial-value">(120 BPM)</span></div>
+                <div class="rotary-dial"><div class="dial-pointer" id="tempo-pointer"></div></div>
+                <input type="range" class="slider-fallback" id="tempo-slider" min="40" max="240" value="120">
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="random-accent-chk"> Randomize Accent</label>
+            <label><input type="checkbox" id="stop-end-phrase" checked> Stop at End of Phrase</label>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box-container">
+                <div class="info-box-label">Number of Notes in Row</div>
+                <input type="number" id="row-length-input" value="12" min="1" max="2048">
+            </div>
+            <div class="info-box-container">
+                <div class="info-box-label">Notes Remaining</div>
+                <div id="countdown-display" class="info-box-value">12</div>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <button id="generate-btn" class="blue-btn">Generate Random Row</button>
+            <div class="beat-indicator-container">
+                Beat: <div id="beat-box-element" class="beat-box">1</div>
+            </div>
+            <button id="play-pause-btn" class="blue-btn" style="margin-left: 5px;">Play</button>
+            <button id="reset-btn" class="red-btn">Erase Tone Row</button>
+            <button id="exportMidiBtn" class="blue-btn" style="margin-left: 5px;">Export MIDI to Reaper</button>
+        <button id="save-preset-btn" style="margin-left: 5px; background-color: #00CC44; color: black; font-weight: bold; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">Save Preset</button>
+<button id="load-preset-btn" style="margin-left: 5px; background-color: #00CC44; color: black; font-weight: bold; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">Load Preset</button>
+        </div>
+
+        <h2>Serial Transformations</h2>
+        <div class="transformation-grid">
+            <button id="retro-btn" class="transform-btn">Retrograde</button>
+            <button id="inversion-btn" class="transform-btn">Inversion</button>
+            <button id="retro-inversion-btn" class="transform-btn">Retro-Inversion</button>
+        </div>
+<div id="matrix-container" style="display: none; margin-top: 20px; text-align: center;">
+    <h2 style="color: black;">Magic Matrix</h2>
+    <div id="matrix-grid" style="display: inline-grid; gap: 4px; background-color: #333; padding: 10px; border-radius: 8px;">
+        <!-- The 12x12 grid squares will be generated here by JavaScript -->
+    </div>
+</div>
+        <h2 style="text-align: center;">Transformed Output</h2>
+        <div class="output-box">
+            <div id="output-display" class="output-text">(Transformed sequence will appear here)</div>
+        </div>
+    <p style="text-align: center; font-family: 'Courier New', Courier, monospace; font-style: italic; color: #FF69B4; font-size: 28px; margin-top: 15px; margin-bottom: 5px;">JackOatsEndeavours</p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let isSequencerPlaying = false;
+    let currentStepIndex = 0;
+    let sequencerTimer = null;
+    let audioCtx = null;
+
+    // --- Rotary Dials Mouse Drag Logic ---
+    document.querySelectorAll('.dial-container').forEach(container => {
+        const slider = container.querySelector('.slider-fallback');
+        if (!slider) return;
+
+        container.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('slider-fallback')) {
+            return;
+        }
+            let startY = e.clientY;
+            let startValue = parseInt(slider.value) || 0;
+            document.body.style.cursor = 'ns-resize';
+            e.preventDefault();
+
+            function onMouseMove(moveEvent) {
+                const deltaY = startY - moveEvent.clientY;
+                const sensitivity = 2;
+                const valueChange = Math.round(deltaY / sensitivity);
+
+                const min = parseInt(slider.min) || 0;
+                const max = parseInt(slider.max) || 100;
+                let newValue = startValue + valueChange;
+
+                if (newValue < min) newValue = min;
+                if (newValue > max) newValue = max;
+
+                slider.value = newValue;
+                slider.dispatchEvent(new Event('input'));
+            }
+
+            function onMouseUp() {
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+                document.body.style.cursor = 'default';
+            }
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        });
+    });
+
+    // --- Audio Initialisation Logic ---
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    // --- Play Individual Note Oscillator Logic ---
+    function playNote(midiOffset, duration, velocity, volume) {
+        initAudio();
+        if (!audioCtx) return;
+
+        let baseFreq = 261.63;
+
+        const keySel = document.getElementById('key-select').value;
+        let keyOffset = 0;
+        const keyOffsets = {
+            'C-maj': 0, 'G-maj': 7, 'D-maj': 2, 'A-maj': 9, 'E-maj': 4, 'B-maj': 11,
+            'Fsh-maj': 6, 'Csh-maj': 1, 'F-maj': 5, 'Bb-maj': 10, 'Eb-maj': 3, 'Ab-maj': 8,
+            'Db-maj': 1, 'Gb-maj': 6, 'Cb-maj': 11
+        };
+        if (keyOffsets[keySel] !== undefined) {
+            keyOffset = keyOffsets[keySel];
+        }
+
+        const octaveMultiplier = parseInt(document.getElementById('octave-select').value) || 1;
+        const randomOctaveShift = Math.floor(Math.random() * octaveMultiplier) * 12;
+        let runningOffset = (midiOffset % 12) + randomOctaveShift;
+
+        let freq = baseFreq * Math.pow(2, (runningOffset + keyOffset) / 12);
+        let osc = audioCtx.createOscillator();
+        let gainNode = audioCtx.createGain();
+
+        const voiceSel = document.getElementById('voice-select').value;
+        if (voiceSel === 'piano' || voiceSel === 'sine') {
+            osc.type = 'sine';
+        } else if (voiceSel === 'triangle') {
+            osc.type = 'triangle';
+        } else if (voiceSel === 'sawtooth') {
+            osc.type = 'sawtooth';
+        }
+
+        osc.frequency.value = freq;
+if (velocity === 0) {
+    return;
+}
+        let targetGain = (velocity / 127) * (volume / 100) * 0.15;
+
+        gainNode.gain.setValueAtTime(targetGain, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration - 0.02);
+
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // --- Update Graphic Pointer Rotation ---
+    function updateDialGraphic(sliderId, pointerId, minDeg, maxDeg, minVal, maxVal) {
+        const slider = document.getElementById(sliderId);
+        const pointer = document.getElementById(pointerId);
+        if (!slider || !pointer) return;
+        const fraction = (parseFloat(slider.value) - minVal) / (maxVal - minVal);
+        const currentDegrees = minDeg + (fraction * (maxDeg - minDeg));
+        pointer.style.transform = `rotate(${currentDegrees}deg)`;
+    }
+
+    // --- Dial Slider Input Listeners ---
+    const volSlider = document.getElementById('vol-slider');
+    volSlider.addEventListener('input', function() {
+        document.getElementById('vol-label').textContent = `(${this.value}%)`;
+        updateDialGraphic('vol-slider', 'vol-pointer', -140, 140, 0, 100);
+    });
+
+    const velSlider = document.getElementById('vel-slider');
+    velSlider.addEventListener('input', function() {
+        document.getElementById('vel-label').textContent = `(${this.value})`;
+        updateDialGraphic('vel-slider', 'vel-pointer', -140, 140, 0, 127);
+    });
+
+    const tempoSlider = document.getElementById('tempo-slider');
+    tempoSlider.addEventListener('input', function() {
+        document.getElementById('tempo-label').textContent = `(${this.value} BPM)`;
+        updateDialGraphic('tempo-slider', 'tempo-pointer', -140, 140, 40, 240);
+    });
+
+    updateDialGraphic('vol-slider', 'vol-pointer', -140, 140, 0, 100);
+    updateDialGraphic('vel-slider', 'vel-pointer', -140, 140, 0, 127);
+    updateDialGraphic('tempo-slider', 'tempo-pointer', -140, 140, 40, 240);
+
+    // --- Main Sequence Playback Engine ---
+    function playSequence() {
+        if (!isSequencerPlaying) return;
+
+        const rawInput = document.getElementById('tone-row-input').value;
+        if (!rawInput.trim()) {
+            stopSequencer();
+            return;
+        }
+
+        let liveArray = rawInput.split(',').map(Number).filter(v => !isNaN(v));
+        if (liveArray.length === 0) return;
+
+        if (currentStepIndex >= liveArray.length) {
+            if (document.getElementById('stop-end-phrase').checked) {
+                stopSequencer();
+                return;
+            }
+            currentStepIndex = 0;
+        }
+
+        let remaining = liveArray.length - currentStepIndex;
+        document.getElementById('countdown-display').textContent = remaining >= 0 ? remaining : 0;
+
+        const timeSig = document.getElementById('time-sig-select').value;
+        let beatsPerMeasure = 4;
+        if (timeSig === '3-4') beatsPerMeasure = 3;
+        if (timeSig === '2-4') beatsPerMeasure = 2;
+        if (timeSig === '6-8') beatsPerMeasure = 6;
+
+        let currentBeat = (currentStepIndex % beatsPerMeasure) + 1;
+        const bBox = document.getElementById('beat-box-element');
+        bBox.textContent = currentBeat;
+
+        if (currentBeat === 1) {
+            bBox.classList.add('beat-flash-green');
+        } else {
+            bBox.classList.remove('beat-flash-green');
+        }
+
+        let currentBpm = parseInt(tempoSlider.value) || 120;
+        let stepDuration = 60 / currentBpm;
+
+        // --- Rhythm Modes behavior ---
+        const rhythmMode = document.getElementById('rhythm-select').value;
+        if (rhythmMode === 'dotted') {
+            stepDuration = (currentStepIndex % 2 === 0) ? stepDuration * 1.5 : stepDuration * 0.5;
+        } else if (rhythmMode === 'random-fluid') {
+            stepDuration = stepDuration * (Math.random() * 1.5 + 0.25);
+        } else if (rhythmMode === 'durations') {
+            stepDuration = stepDuration * (Math.floor(Math.random() * 4) + 1) * 0.5;
+        } else if (rhythmMode === 'interleaved' && currentStepIndex % 2 === 1) {
+            currentStepIndex++;
+            sequencerTimer = setTimeout(playSequence, stepDuration * 1000);
+            return;
+        }
+
+        let currentVol = parseInt(volSlider.value) || 0;
+        let currentVel = velSlider.value !== "" ? parseInt(velSlider.value) : 100;
+
+        if (document.getElementById('random-accent-chk').checked) {
+            currentVel = Math.min(127, Math.max(20, currentVel + (Math.floor(Math.random() * 41) - 20)));
+        }
+
+        const noteNumber = liveArray[currentStepIndex];
+        playNote(noteNumber, stepDuration, currentVel, currentVol);
+
+        currentStepIndex++;
+        sequencerTimer = setTimeout(playSequence, stepDuration * 1000);
+    }
+
+    // --- Stop Playback Engine ---
+    function stopSequencer() {
+        isSequencerPlaying = false;
+        document.getElementById('play-pause-btn').textContent = "Play";
+        const bBox = document.getElementById('beat-box-element');
+        bBox.classList.remove('beat-flash-green');
+        clearTimeout(sequencerTimer);
+    }
+
+    // --- Control Button Listeners ---
+    document.getElementById('play-pause-btn').addEventListener('click', function() {
+        isSequencerPlaying = !isSequencerPlaying;
+        if (isSequencerPlaying) {
+            this.textContent = "Pause";
+            const rowText = document.getElementById('tone-row-input').value;
+            if (!rowText.trim()) {
+                document.getElementById('generate-btn').click();
+            }
+            playSequence();
+        } else {
+            stopSequencer();
+        }
+    });
+
+    document.getElementById('retro-btn').addEventListener('click', function() {
+        const rawInput = document.getElementById('tone-row-input').value;
+        if (!rawInput.trim()) return;
+        let currentArray = rawInput.split(',').map(Number).filter(v => !isNaN(v));
+        let result = [...currentArray].reverse();
+        document.getElementById('output-display').textContent = result.join(', ');
+    });
+
+    document.getElementById('inversion-btn').addEventListener('click', function() {
+        const rawInput = document.getElementById('tone-row-input').value;
+        if (!rawInput.trim()) return;
+        let currentArray = rawInput.split(',').map(Number).filter(v => !isNaN(v));
+        if (currentArray.length === 0) return;
+        let first = currentArray[0];
+        let result = currentArray.map(note => {
+            let inv = first - (note - first);
+            return ((inv % 12) + 12) % 12;
+        });
+        document.getElementById('output-display').textContent = result.join(', ');
+    });
+
+    document.getElementById('retro-inversion-btn').addEventListener('click', function() {
+        const rawInput = document.getElementById('tone-row-input').value;
+        if (!rawInput.trim()) return;
+        let currentArray = rawInput.split(',').map(Number).filter(v => !isNaN(v));
+        if (currentArray.length === 0) return;
+        let first = currentArray[0];
+        let result = currentArray.map(note => {
+            let inv = first - (note - first);
+            return ((inv % 12) + 12) % 12;
+        }).reverse();
+        document.getElementById('output-display').textContent = result.join(', ');
+    });
+
+    document.getElementById('generate-btn').addEventListener('click', function() {
+        currentStepIndex = 0;
+        const targetLength = parseInt(document.getElementById('row-length-input').value) || 12;
+        let baseRow = [];
+        for (let i = 0; i < targetLength; i++) {
+            baseRow.push(Math.floor(Math.random() * 12));
+        }
+        document.getElementById('tone-row-input').value = baseRow.join(', ');
+        document.getElementById('countdown-display').textContent = targetLength;
+document.getElementById('tone-row-input').value = baseRow.join(', ');
+    document.getElementById('countdown-display').textContent = targetLength;
+    generateMatrix(baseRow);
+});
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', function() {
+        stopSequencer();
+        currentStepIndex = 0;
+        document.getElementById('tone-row-input').value = "";
+        document.getElementById('output-display').textContent = "(Transformed sequence will appear here)";
+        const targetLength = document.getElementById('row-length-input').value;
+        document.getElementById('countdown-display').textContent = targetLength;
+        const bBox = document.getElementById('beat-box-element');
+        if(bBox) {
+            bBox.textContent = "1";
+            bBox.classList.remove('beat-flash-green');
+        }
+    });
+
+
+
+    // --- Preset Save and Load Logic ---
+document.getElementById('save-preset-btn').addEventListener('click', () => {
+    const rawInput = document.getElementById('tone-row-input').value;
+    localStorage.setItem('genoras_stored_row', rawInput);
+    alert('Tone Row successfully saved to memory!');
+});
+document.getElementById('load-preset-btn').addEventListener('click', () => {
+    const savedRow = localStorage.getItem('genoras_stored_row');
+    if (!savedRow) {
+        alert('No saved preset found.');
+        return;
+    }
+    document.getElementById('tone-row-input').value = savedRow;
+    alert('Tone Row successfully loaded!');
+});
+
+// --- MIDI Writer File Export Logic ---
+document.getElementById('exportMidiBtn').addEventListener('click', function() {
+    const rawInput = document.getElementById('tone-row-input').value;
+    if (!rawInput.trim()) {
+        alert("Please create or enter a tone row first!");
+        return;
+    }
+
+    let notesArray = rawInput.split(',').map(Number).filter(v => !isNaN(v));
+    let track = new MidiWriter.Track();
+
+    const currentBpm = parseInt(document.getElementById('tempo-slider').value) || 120;
+    track.setTempo(currentBpm);
+
+    const midiMapping = [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71];
+    const isRandomVelocity = document.getElementById('random-accent-chk').checked;
+
+    notesArray.forEach(function(noteNum) {
+        let midiPitch = midiMapping[noteNum % 12];
+        let velocityValue = isRandomVelocity ? Math.floor(Math.random() * (120 - 60 + 1)) + 60 : 90;
+        const chosenDuration = document.getElementById('note-duration-select').value;
+        track.addEvent(new MidiWriter.NoteEvent({pitch: [midiPitch], duration: chosenDuration, velocity: velocityValue}));
+    });
+
+    let write = new MidiWriter.Writer(track);
+    let link = document.createElement('a');
+    link.href = write.dataUri();
+    link.download = 'serial-music-row.mid';
+    link.click();
+    });
+
+function generateMatrix(row) {
+    const grid = document.getElementById('matrix-grid');
+    grid.style.display = 'none';
+    grid.innerHTML = ''; // Clear any old matrix
+    
+    if (!row || row.length === 0) return;
+    
+    // Set up a 12-column grid layout
+    grid.style.gridTemplateColumns = `repeat(${row.length}, 40px)`;
+    
+    // Calculate the inversion intervals based on the first note
+    const firstNote = row[0];
+    const inversionRow = row.map(note => (firstNote - (note - firstNote) % 12 + 12) % 12);
+    
+    // Build the 12x12 matrix rows
+    for (let r = 0; r < row.length; r++) {
+        const rowFirstNote = inversionRow[r];
+        const shift = (rowFirstNote - firstNote + 12) % 12;
+        
+        for (let c = 0; c < row.length; c++) {
+    
+    
+            const matrixNote = (row[c] + shift) % 12;
+            
+            // Create a visual square for each note
+            const cell = document.createElement('div');
+            cell.textContent = matrixNote;
+            cell.style.width = '40px';
+            cell.style.height = '40px';
+            cell.style.display = 'flex';
+            cell.style.alignItems = 'center';
+            cell.style.justifyContent = 'center';
+            cell.style.backgroundColor = '#fff';
+            cell.style.color = '#000';
+            cell.style.fontWeight = 'bold';
+            cell.style.borderRadius = '4px';
+            
+            grid.appendChild(cell);
+        }
+    }
+}
+</script>
+</body>
+</html>
